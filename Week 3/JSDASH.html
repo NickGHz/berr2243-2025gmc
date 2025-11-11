@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rides & Users Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-top: 30px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    input, button { margin: 4px 0; padding: 6px; }
+    .section { margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Dashboard</h1>
+
+  <div class="section">
+    <h2>Rides</h2>
+    <button onclick="loadRides()">Load Rides</button>
+    <table id="ridesTable">
+      <thead>
+        <tr><th>ID</th><th>Pickup</th><th>Destination</th><th>Driver ID</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Add Ride</h3>
+    <input id="ridePickup" placeholder="pickupLocation" />
+    <input id="rideDest" placeholder="destination" />
+    <input id="rideDriver" placeholder="driverId" />
+    <input id="rideStatus" placeholder="status" />
+    <button onclick="addRide()">Add Ride</button>
+  </div>
+
+  <div class="section">
+    <h2>Users</h2>
+    <button onclick="loadUsers()">Load Users</button>
+    <table id="usersTable">
+      <thead>
+        <tr><th>ID</th><th>Pickup</th><th>Destination</th><th>User ID</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Add User</h3>
+    <input id="userPickup" placeholder="pickupLocation" />
+    <input id="userDest" placeholder="destination" />
+    <input id="userId" placeholder="userId" />
+    <input id="userStatus" placeholder="status" />
+    <button onclick="addUser()">Add User</button>
+  </div>
+
+  <script>
+    const API = "http://localhost:3000";
+
+    async function loadRides() {
+      const res = await fetch(`${API}/rides`);
+      const data = await res.json();
+      const tbody = document.querySelector('#ridesTable tbody');
+      tbody.innerHTML = data.map(r => `
+        <tr>
+          <td>${r._id}</td>
+          <td>${r.pickupLocation || ''}</td>
+          <td>${r.destination || ''}</td>
+          <td>${r.driverId || ''}</td>
+          <td>${r.status || ''}</td>
+          <td>
+            <button onclick="updateRide('${r._id}')">Update</button>
+            <button onclick="deleteRide('${r._id}')">Delete</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    async function addRide() {
+      const pickupLocation = document.getElementById('ridePickup').value;
+      const destination = document.getElementById('rideDest').value;
+      const driverId = document.getElementById('rideDriver').value;
+      const status = document.getElementById('rideStatus').value;
+
+      await fetch(`${API}/rides`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickupLocation, destination, driverId, status })
+      });
+      loadRides();
+    }
+
+    async function updateRide(id) {
+      const status = prompt("Enter new status:");
+      await fetch(`${API}/rides/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      loadRides();
+    }
+
+    async function deleteRide(id) {
+      await fetch(`${API}/rides/${id}`, { method: 'DELETE' });
+      loadRides();
+    }
+
+    async function loadUsers() {
+      const res = await fetch(`${API}/users`);
+      const data = await res.json();
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = data.map(u => `
+        <tr>
+          <td>${u._id}</td>
+          <td>${u.pickupLocation || ''}</td>
+          <td>${u.destination || ''}</td>
+          <td>${u.userId || ''}</td>
+          <td>${u.status || ''}</td>
+          <td>
+            <button onclick="updateUser('${u._id}')">Update</button>
+            <button onclick="deleteUser('${u._id}')">Delete</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    async function addUser() {
+      const pickupLocation = document.getElementById('userPickup').value;
+      const destination = document.getElementById('userDest').value;
+      const userId = document.getElementById('userId').value;
+      const status = document.getElementById('userStatus').value;
+
+      await fetch(`${API}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickupLocation, destination, userId, status })
+      });
+      loadUsers();
+    }
+
+    async function updateUser(id) {
+      const status = prompt("Enter new status:");
+      await fetch(`${API}/users/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      loadUsers();
+    }
+
+    async function deleteUser(id) {
+      await fetch(`${API}/users/${id}`, { method: 'DELETE' });
+      loadUsers();
+    }
+  </script>
+</body>
+</html>
